@@ -5,8 +5,7 @@ $pdo = new PDO(DSN, USER, PASSWORD);
 
 $query = "SELECT * FROM friend";
 $statement = $pdo->query($query);
-$friends = $statement->fetchAll();
-
+$friends = $statement->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,23 +49,27 @@ $friends = $statement->fetchAll();
     <input type="submit" value="Envoyer">
 
     <?php
+
+    $errors = [];
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $data = array_map('trim', $_POST);
-        $errors = [];
-        if (!isset($data['firstname']) || empty($data['firstname']))
+        $friend = array_map('trim', $_POST);
+
+        if (!isset($friend['firstname']) || empty($friend['firstname']))
             $errors[] = 'Le prénom est obligatoire';
-        if (!isset($data['lastname']) || empty($data['lastname']))
+        if (!isset($friend['lastname']) || empty($friend['lastname']))
             $errors[] = 'Le nom est obligatoire';
         if (count($errors) === 0) {
-            $pdo = new \PDO(DSN, USER, PASSWORD);
 
-            $query2 = 'INSERT INTO friend (firstname, lastname) VALUES (:firstname, :lastname)';
-            $statement = $pdo->prepare($query2);
-            $statement->bindValue(':firstname', $firstname, \PDO::PARAM_STR);
-            $statement->bindValue(':lastname', $lastname, \PDO::PARAM_STR);
+            $query = 'INSERT INTO friend (firstname, lastname) VALUES (:firstname, :lastname)';
+            $statement = $pdo->prepare($query);
+            $statement->bindValue(':firstname', $friend['firstname'], \PDO::PARAM_STR);
+            $statement->bindValue(':lastname', $friend['lastname'], \PDO::PARAM_STR);
             $statement->execute();
+            header('Location: /');
+            die();
         }
-    }  ?>
+    }
+    ?>
 </body>
 
 </html>
